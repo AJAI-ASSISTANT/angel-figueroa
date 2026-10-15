@@ -48,7 +48,11 @@ const PHONE = '929-621-9399', TEL = '+19296219399', EMAIL = 'angellf419@gmail.co
 // Email-safe: one image carrying every detail, wrapped in a link to his page (where Call,
 // Text, Email and Save contact are tappable). The alt text repeats the details for anyone
 // whose email app blocks images.
-const LINK = window.SIG_LINK || new URL('..', location.href).href;
+const LINK = window.SIG_LINK || 'https://angel.thefinerthingsevents.com/';
+// The canonical home, NOT wherever this page happens to be open. A signature
+// is copied ONCE and the address it carried at that moment is frozen into
+// Gmail; copied from the old github.io address, every email afterwards points
+// there and nothing on the page ever says so. SIG_LINK still overrides it.
 const ALT = `Angel Figueroa — Event Production · Call/Text ${PHONE} · ${EMAIL} · Chime ${CHIME}`;
 const sig = ([id]) => `
 <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;width:480px;max-width:100%;">
