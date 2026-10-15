@@ -24,7 +24,7 @@
 <body>
 <header>
   <h1>Angel Figueroa · Email signatures</h1>
-  <p>Each one is shown inside a sample email. Press “Copy signature”, then paste it into your email app’s signature settings.</p>
+  <p>Everything is inside the image — name, phone, email and Chime. Tapping it opens his page, where call, text, email and save contact all work.</p>
 </header>
 <div class="wrap" id="wrap"></div>
 
@@ -42,36 +42,16 @@ const LOOKS = [
 const PHONE = '929-621-9399', TEL = '+19296219399', EMAIL = 'angellf419@gmail.com', CHIME = '$Angel-Figueroa-48';
 
 // Email-safe: tables, inline styles, web-safe fonts, absolute image URLs, no CSS classes.
+// Email-safe: one image carrying every detail, wrapped in a link to his page (where Call,
+// Text, Email and Save contact are tappable). The alt text repeats the details for anyone
+// whose email app blocks images.
+const LINK = window.SIG_LINK || new URL('..', location.href).href;
+const ALT = `Angel Figueroa — Event Production · Call/Text ${PHONE} · ${EMAIL} · Chime ${CHIME}`;
 const sig = ([id, , acc, deep, ext = 'jpg']) => `
-<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;width:480px;max-width:100%;font-family:Helvetica,Arial,sans-serif;">
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;width:480px;max-width:100%;">
   <tr><td style="padding:0;">
-    <img src="${BASE}banner-${id}.${ext}" width="480" height="120" alt="Angel Figueroa — Event Production" style="display:block;width:480px;max-width:100%;height:auto;border:0;border-radius:10px;">
+    <a href="${LINK}" style="text-decoration:none;border:0;"><img src="${BASE}banner-${id}.${ext}" width="480" height="170" alt="${ALT}" title="Angel Figueroa — tap for contact and payment" style="display:block;width:480px;max-width:100%;height:auto;border:0;border-radius:10px;"></a>
   </td></tr>
-  <tr><td style="padding:14px 4px 0;">
-    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
-      <tr>
-        <td style="padding:0 18px 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8a8f9e;">Call / Text</td>
-        <td style="padding:0;font-size:14px;"><a href="tel:${TEL}" style="color:${deep};text-decoration:none;font-weight:bold;">${PHONE}</a></td>
-      </tr>
-      <tr><td colspan="2" style="height:6px;line-height:6px;font-size:6px;">&nbsp;</td></tr>
-      <tr>
-        <td style="padding:0 18px 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8a8f9e;">Email</td>
-        <td style="padding:0;font-size:14px;"><a href="mailto:${EMAIL}" style="color:${deep};text-decoration:none;">${EMAIL}</a></td>
-      </tr>
-      <tr><td colspan="2" style="height:6px;line-height:6px;font-size:6px;">&nbsp;</td></tr>
-      <tr>
-        <td style="padding:0 18px 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8a8f9e;">Chime</td>
-        <td style="padding:0;font-size:14px;color:${deep};font-weight:bold;">${CHIME}</td>
-      </tr>
-    </table>
-  </td></tr>
-  <tr><td style="padding:14px 4px 0;">
-    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;width:100%;"><tr>
-      <td style="height:2px;line-height:2px;font-size:2px;background:${acc};width:44px;">&nbsp;</td>
-      <td style="height:2px;line-height:2px;font-size:2px;background:#e6e7eb;">&nbsp;</td>
-    </tr></table>
-  </td></tr>
-  <tr><td style="padding:10px 4px 0;font-size:11px;letter-spacing:1px;color:#8a8f9e;">Event production &middot; Lighting &middot; Sound &middot; Staging &mdash; anywhere you need it.</td></tr>
 </table>`;
 
 const wrap = document.getElementById('wrap');

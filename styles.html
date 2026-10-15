@@ -6,7 +6,7 @@
 <title>Angel Figueroa — Style Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Syne:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Syne:wght@600;800&family=Jost:wght@300&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -81,6 +81,8 @@
   .s-concrete{ --accent: #1b1b1d; --ink: #1b1b1d; --on-accent: #f4f2ee; --display: "Syne"; --name-font: 800 25px/1 "Syne"; --name-track: .02em; --glass: rgba(255,255,255,.34); --glass-line: rgba(0,0,0,.10); --btn-bg: rgba(0,0,0,.05); --blur: 14px; }
   .s-concrete .name, .s-concrete .role { text-shadow: none; }
   .s-concrete .pay { background: rgba(255,255,255,.3); }
+  .s-wstars, .s-bk { --accent: #ffd59a; --ink: #fff6ea; --on-accent: #1e1406; --display: "Cormorant Garamond"; --name-font: 500 32px/1 "Cormorant Garamond"; --name-track: .01em; --glass: rgba(10,7,4,.30); --glass-line: rgba(255,213,154,.24); }
+  .s-wstars .role, .s-bk .role { font-family: Jost, "Space Grotesk", sans-serif; font-weight: 300; }
   .s-nebula { --accent: #4ff0d2; --ink: #f0fffb; --on-accent: #00140f; --display: "Orbitron"; --glass: rgba(6,2,16,.26); --glass-line: rgba(120,255,220,.24); }
 </style>
 </head>
@@ -128,6 +130,8 @@ const STYLES = [
   ['prism',    'Prism',                   'White light splitting into a rainbow', 'shiny'],
   ['galaxy',   'Spiral galaxy',           'A slowly turning galaxy, billions of stars', 'matte'],
   ['concrete', 'Gallery concrete',        'Matte stone with sunlight through blinds', 'matte'],
+  ['wstars',   'Warm starfield',          'Matches signature 05 -- gold and ivory stars breathing', 'matte'],
+  ['bk',       'Brooklyn night',          'Matches signature 06 -- the bridge under the stars', 'matte'],
 ];
 const grid = document.getElementById('grid'), tpl = document.getElementById('card');
 const scenes = [];
@@ -136,6 +140,7 @@ for (const [id, title, sub, finish] of STYLES) {
   const fig = document.createElement('figure');
   fig.innerHTML = `<div class="phone s-${id}"><canvas></canvas></div><figcaption><b><span class="num">${String(++n).padStart(2, '0')}</span>${title}</b><span>${sub}</span><br><em class="${finish}">${finish}</em></figcaption>`;
   const ph = fig.querySelector('.phone'); ph.appendChild(tpl.content.cloneNode(true));
+  if (['wstars', 'bk', 'gold', 'lgold', 'saturn'].includes(id)) ph.querySelector('.name').textContent = 'Angel Figueroa';
   grid.appendChild(fig);
   const c = ph.querySelector('canvas'), dpr = Math.min(devicePixelRatio || 1, 2);
   c.width = 300 * dpr; c.height = 620 * dpr; const x = c.getContext('2d'); x.scale(dpr, dpr);
@@ -465,6 +470,73 @@ const P = {
     for (let i = -8; i < 8; i++) { const y = i * 34 + ((t * 4) % 34); const g = x.createLinearGradient(0, y, 0, y + 18); g.addColorStop(0, 'rgba(255,248,230,0)'); g.addColorStop(.5, 'rgba(255,246,225,.55)'); g.addColorStop(1, 'rgba(255,248,230,0)'); x.fillStyle = g; x.fillRect(-W, y, W * 2, 18); }
     x.restore();
     const sh = x.createLinearGradient(0, H, W, 0); sh.addColorStop(0, 'rgba(60,55,50,.25)'); sh.addColorStop(1, 'rgba(60,55,50,0)'); x.fillStyle = sh; x.fillRect(0, 0, W, H);
+  },
+
+  wstars(x, W, H, t, s) {
+    // the AJ sky, warm: real star colours, wide brightness range, two-rhythm twinkle
+    if (!s.st) {
+      const COLS = [[[199,214,255],.05],[[255,255,255],.25],[[255,242,219],.30],[[255,219,168],.24],[[255,194,128],.12],[[255,168,107],.04]];
+      const pick = () => { let r = Math.random(); for (const [c, w] of COLS) { if ((r -= w) <= 0) return c; } return COLS[1][0]; };
+      s.sp = {}; s.st = Array.from({ length: 900 }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, H), s: .6 + Math.pow(u, 5) * 3.6, b: .08 + .92 * Math.pow(u, 3.2), c: pick(), f1: R(.25, .9), f2: R(.9, 2.2), p: R(0, 40), tw: R(.25, .7) }; });
+    }
+    x.fillStyle = '#060403'; x.fillRect(0, 0, W, H);
+    const g = x.createRadialGradient(W * .7, H * .35, 0, W * .7, H * .35, H * .7); g.addColorStop(0, 'rgba(255,170,90,.07)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.globalCompositeOperation = 'lighter';
+    for (const p of s.st) {
+      const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7);
+      let tw = Math.min(1, slow * (.6 + .4 * fast)); tw = tw * tw * (3 - 2 * tw);
+      const b = p.b * (1 - p.tw * tw), r = p.s * 1.7;
+      const gg = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      gg.addColorStop(0, `rgba(255,255,255,${b})`); gg.addColorStop(.12, `rgba(255,255,255,${b * .9})`); gg.addColorStop(.3, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`); gg.addColorStop(1, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},0)`);
+      x.fillStyle = gg; x.fillRect(p.x - r, p.y - r, r * 2, r * 2);
+      if (p.s > 2.8 && b > .45) { const L = p.s * 5 * b; x.strokeStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`; x.lineWidth = .7; x.beginPath(); x.moveTo(p.x - L, p.y); x.lineTo(p.x + L, p.y); x.moveTo(p.x, p.y - L); x.lineTo(p.x, p.y + L); x.stroke(); }
+    }
+    x.globalCompositeOperation = 'source-over';
+  },
+  bk(x, W, H, t, s) {
+    const HZ = H * .64;
+    if (!s.sil) {
+      // silhouettes drawn once: hazy skyline behind, the bridge in front
+      s.sil = document.createElement('canvas'); s.sil.width = W * 2; s.sil.height = H * 2; const c = s.sil.getContext('2d'); c.scale(2, 2);
+      s.win = []; let bx = -4;
+      c.fillStyle = '#16110f';
+      while (bx < W) { const w = R(10, 22), h = R(18, 62), top = HZ - 4 - h; c.fillRect(bx, top, w, h + 4);
+        if (Math.random() < .2) { c.fillRect(bx + w * .3, top - 7, w * .4, 7); }
+        for (let yy = top + 4; yy < HZ - 6; yy += 5) for (let xx = bx + 2; xx < bx + w - 2; xx += 4) if (Math.random() < .3) s.win.push([xx, yy, R(0, 6.28), R(.4, 1.2), R(.35, .9)]);
+        bx += w + R(1, 3); }
+      const T1 = W * .2, T2 = W * .8, TOP = HZ - 150, DECK = HZ - 16;
+      c.fillStyle = '#070505';
+      for (const tx of [T1, T2]) { c.fillRect(tx - 12, TOP, 24, H - TOP); c.fillRect(tx - 14, TOP - 3, 28, 6); }
+      c.fillRect(0, DECK, W, 5);
+      s.arch = [];
+      for (const tx of [T1, T2]) for (const ax of [tx - 8, tx + 2]) { c.clearRect(ax, TOP + 26, 6, 40); c.beginPath(); c.moveTo(ax, TOP + 26); c.lineTo(ax + 3, TOP + 16); c.lineTo(ax + 6, TOP + 26); c.fill(); s.arch.push([ax, TOP + 18, 6, 48]); }
+      const cy = xp => { if (xp >= T1 && xp <= T2) { const u = (xp - (T1 + T2) / 2) / ((T2 - T1) / 2); return TOP + 4 + (DECK - 10 - TOP) * (1 - u * u); }
+        const u = xp < T1 ? (T1 - xp) / T1 : (xp - T2) / (W - T2); return TOP + 4 + (DECK - TOP - 4) * Math.min(1, u * 1.1) ** .85; };
+      c.strokeStyle = 'rgba(214,168,96,.75)'; c.lineWidth = 1.1; for (const off of [0, 2.5]) { c.beginPath(); for (let xp = 0; xp <= W; xp += 1) xp ? c.lineTo(xp, cy(xp) + off) : c.moveTo(xp, cy(xp) + off); c.stroke(); }
+      c.strokeStyle = 'rgba(214,168,96,.35)'; c.lineWidth = .5;
+      for (let xp = 2; xp < W; xp += 3.5) if (Math.abs(xp - T1) > 13 && Math.abs(xp - T2) > 13) { c.beginPath(); c.moveTo(xp, cy(xp)); c.lineTo(xp, DECK); c.stroke(); }
+      for (const tx of [T1, T2]) for (let k = 1; k < 8; k++) for (const sg of [-1, 1]) { c.beginPath(); c.moveTo(tx, TOP + 8); c.lineTo(tx + sg * k * 9, DECK); c.stroke(); }
+      if (!s.st) s.st = Array.from({ length: 520 }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, HZ - 10), s: .7 + Math.pow(u, 5) * 3.4, b: (.10 + .90 * Math.pow(u, 3.0)), f1: R(.25, .9), f2: R(.9, 2.2), p: R(0, 40), tw: R(.25, .7), c: Math.random() < .6 ? [255, 236, 205] : [255, 214, 160] }; });
+    }
+    const g = x.createLinearGradient(0, 0, 0, HZ); g.addColorStop(0, '#040304'); g.addColorStop(.75, '#120a07'); g.addColorStop(1, '#3a2010'); x.fillStyle = g; x.fillRect(0, 0, W, HZ);
+    x.globalCompositeOperation = 'lighter';
+    for (const p of s.st) { const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7); let tw = Math.min(1, slow * (.6 + .4 * fast)); tw = tw * tw * (3 - 2 * tw);
+      const b = p.b * (1 - p.tw * tw) * (.4 + .6 * Math.min(1, (HZ - p.y) / 160)), r = p.s * 1.6; const gg = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      gg.addColorStop(0, `rgba(255,255,255,${b})`); gg.addColorStop(.12, `rgba(255,255,255,${b * .9})`); gg.addColorStop(.3, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`); gg.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gg; x.fillRect(p.x - r, p.y - r, r * 2, r * 2); }
+    x.globalCompositeOperation = 'source-over';
+    x.drawImage(s.sil, 0, 0, W, H);
+    x.globalCompositeOperation = 'lighter';
+    for (const [wx, wy, ph, sp, br] of s.win) { x.fillStyle = `rgba(255,205,130,${br * (.65 + .35 * Math.sin(t * sp + ph))})`; x.fillRect(wx, wy, 1.6, 1.8); }
+    for (const [ax, ay, aw, ah] of s.arch) { x.fillStyle = `rgba(255,180,100,${.38 + .06 * Math.sin(t)})`; x.fillRect(ax, ay, aw, ah); }
+    x.globalCompositeOperation = 'source-over';
+    // the river: dark water with the city shimmering in it
+    x.fillStyle = '#060405'; x.fillRect(0, HZ, W, H - HZ);
+    x.drawImage(s.sil, 0, HZ * 2, W * 2, (H - HZ) * 2, 0, HZ, W, H - HZ);   // tower bases stay in front of the water
+    x.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 70; k++) { const xx = (k * 47.3) % W, len = 30 + (k * 13) % 60, yy = HZ + 6 + (k * 7) % 30, a = .10 + .08 * Math.sin(t * 2 + k);
+      const gr = x.createLinearGradient(0, yy, 0, yy + len); gr.addColorStop(0, `rgba(255,190,110,${a})`); gr.addColorStop(1, 'rgba(255,190,110,0)'); x.fillStyle = gr; x.fillRect(xx + Math.sin(t * 1.5 + k) * 2, yy, 1.5, len); }
+    const hz = x.createLinearGradient(0, HZ - 30, 0, HZ + 20); hz.addColorStop(0, 'rgba(255,150,70,0)'); hz.addColorStop(.6, 'rgba(255,150,70,.12)'); hz.addColorStop(1, 'rgba(255,150,70,0)'); x.fillStyle = hz; x.fillRect(0, HZ - 30, W, 50);
+    x.globalCompositeOperation = 'source-over';
   },
   nebula(x, W, H, t, s) {
     if (!s.c) s.c = Array.from({ length: 16 }, (_, i) => ({ x: R(0, W), y: R(0, H * .8), r: R(90, 200), h: i % 2 ? 'rgba(255,60,200,' : 'rgba(40,240,210,', a: R(.08, .2), p: R(0, 6) }));
