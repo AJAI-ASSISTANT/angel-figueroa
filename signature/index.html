@@ -26,20 +26,17 @@
 <canvas id="sky" aria-hidden="true"></canvas>
 <header>
   <h1>Angel Figueroa · Email signatures</h1>
-  <p>Everything is inside the image — name, phone, email and Chime. Tapping it opens his page, where call, text, email and save contact all work.</p>
+  <p>Nine signatures, one matching each page style. Everything is inside the image — name, phone, email and Chime — and tapping it opens his page.</p>
 </header>
 <div class="wrap" id="wrap"></div>
 
 <script>
 // Where the banner images will live once published (absolute URLs are required in email).
 const BASE = window.SIG_BASE || new URL('.', location.href).href;
-const LOOKS = [
-  ['blue',  'Black and electric blue', '#2f8bff', '#0a1630'],
-  ['inter', 'Interstellar',            '#e8963a', '#1a1208'],
-  ['lgold', 'Liquid gold',             '#b8862e', '#1f1606'],
-  ['laser', 'Laser show',              '#1fbf5a', '#081a10'],
-  ['stars', 'Starfield — live',        '#d9a24a', '#5a3a12', 'gif'],
-  ['brooklyn', 'Brooklyn night — live', '#d9a24a', '#5a3a12', 'gif'],
+const LOOKS = [   // one to match each wristband page, same order and numbers
+  ['holo',     'Silver hologram'], ['gold',   'Silver constellation'], ['aurora',   'Blue aurora'],
+  ['tron',     'Blue circuit'],    ['wstars', 'White starfield'],      ['nebula',   'Blue nebula'],
+  ['concrete', 'Brushed steel'],   ['magma',  'Obsidian ice'],         ['saturn',   'Pluto'],
 ];
 const PHONE = '929-621-9399', TEL = '+19296219399', EMAIL = 'angellf419@gmail.com', CHIME = '$Angel-Figueroa-48';
 
@@ -49,10 +46,10 @@ const PHONE = '929-621-9399', TEL = '+19296219399', EMAIL = 'angellf419@gmail.co
 // whose email app blocks images.
 const LINK = window.SIG_LINK || new URL('..', location.href).href;
 const ALT = `Angel Figueroa — Event Production · Call/Text ${PHONE} · ${EMAIL} · Chime ${CHIME}`;
-const sig = ([id, , acc, deep, ext = 'jpg']) => `
+const sig = ([id]) => `
 <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;width:480px;max-width:100%;">
   <tr><td style="padding:0;">
-    <a href="${LINK}" style="text-decoration:none;border:0;"><img src="${BASE}banner-${id}.${ext}" width="480" height="170" alt="${ALT}" title="Angel Figueroa — tap for contact and payment" style="display:block;width:480px;max-width:100%;height:auto;border:0;border-radius:10px;"></a>
+    <a href="${LINK}" style="text-decoration:none;border:0;"><img src="${BASE}sig-${id}.jpg" width="480" height="170" alt="${ALT}" title="Angel Figueroa — tap for contact and payment" style="display:block;width:480px;max-width:100%;height:auto;border:0;border-radius:10px;"></a>
   </td></tr>
 </table>`;
 

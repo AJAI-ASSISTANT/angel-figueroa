@@ -1,9 +1,9 @@
-/* The front page's own sky: warm stars in real colours, drawn at the screen's full pixel
+/* The front page's own sky: white stars on near-black with a breath of blue, drawn at the screen's full pixel
    density (so it is crisp on any display), each breathing on two unrelated rhythms. */
 (() => {
   const c = document.getElementById('sky'), x = c.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const COLS = [[[199,214,255],.05],[[255,255,255],.25],[[255,242,219],.30],[[255,219,168],.24],[[255,194,128],.12],[[255,168,107],.04]];
+  const COLS = [[[255,255,255],.7],[[244,247,255],.3]];   // white stars, always
   const pick = () => { let r = Math.random(); for (const [col, w] of COLS) { if ((r -= w) <= 0) return col; } return COLS[1][0]; };
   let W, H, dpr, stars = [];
   const R = (a, b) => a + Math.random() * (b - a);
@@ -19,9 +19,9 @@
     requestAnimationFrame(frame);
     if (document.hidden || now - last < 1000 / 40) return; last = now;
     const t = reduce ? 0 : now / 1000;
-    x.fillStyle = '#060403'; x.fillRect(0, 0, W, H);
+    x.fillStyle = '#020203'; x.fillRect(0, 0, W, H);
     const g = x.createRadialGradient(W * .72, H * .3, 0, W * .72, H * .3, Math.max(W, H) * .8);
-    g.addColorStop(0, 'rgba(255,165,85,.08)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    g.addColorStop(0, 'rgba(70,120,255,.06)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
     x.globalCompositeOperation = 'lighter';
     for (const p of stars) {
       const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7);
