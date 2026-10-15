@@ -25,19 +25,15 @@
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
 <header>
-  <h1>Angel Figueroa · Email signatures</h1>
-  <p>Nine signatures, one matching each page style. Everything is inside the image — name, phone, email and Chime — and tapping it opens his page.</p>
+  <h1>Angel Figueroa · Email signature</h1>
+  <p>Press “Copy signature”, then paste it into your email signature settings:<br><b>Gmail</b> (computer): Settings ⚙ → See all settings → General → Signature → Create new → paste → Save changes at the bottom.<br><b>iPhone Mail</b>: Settings → Apps → Mail → Signature → paste.<br>Tapping the signature opens your page.</p>
 </header>
 <div class="wrap" id="wrap"></div>
 
 <script>
 // Where the banner images will live once published (absolute URLs are required in email).
 const BASE = window.SIG_BASE || new URL('.', location.href).href;
-const LOOKS = [   // one to match each wristband page, same order and numbers
-  ['holo',     'Silver hologram'], ['gold',   'Silver constellation'], ['aurora',   'Blue aurora'],
-  ['tron',     'Blue circuit'],    ['wstars', 'White starfield'],      ['nebula',   'Blue nebula'],
-  ['concrete', 'Brushed steel'],   ['magma',  'Obsidian ice'],         ['saturn',   'Pluto on stage'],
-];
+const LOOKS = [['magma', 'Obsidian ice']];   // his choice
 const PHONE = '929-621-9399', TEL = '+19296219399', EMAIL = 'angellf419@gmail.com', CHIME = '$Angel-Figueroa-48';
 
 // Email-safe: tables, inline styles, web-safe fonts, absolute image URLs, no CSS classes.
@@ -56,7 +52,7 @@ const sig = ([id]) => `
 const wrap = document.getElementById('wrap');
 LOOKS.forEach((l, i) => {
   const box = document.createElement('section'); box.className = 'opt';
-  box.innerHTML = `<h2><span>0${i + 1}</span>${l[1]}</h2>
+  box.innerHTML = `<h2><span>08</span>${l[1]}</h2>
     <div class="mail"><p class="body">Hi Jordan,<br><br>Thanks for having us — the lighting plot for Saturday is attached. Load-in is at 2pm.<br><br>Best,</p><div class="sig">${sig(l)}</div></div>
     <div class="bar"><button type="button">Copy signature</button><span class="ok" aria-live="polite"></span></div>`;
   wrap.appendChild(box);
