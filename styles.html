@@ -349,7 +349,7 @@ const P = {
     if (!s.st) s.st = Array.from({ length: 240 }, () => ({ x: R(0, W), y: R(0, H), r: R(.2, 1.2), p: R(0, 9) }));
     x.fillStyle = '#010102'; x.fillRect(0, 0, W, H);
     for (const p of s.st) { x.fillStyle = `rgba(255,255,255,${.45 + .4 * Math.sin(t * .7 + p.p)})`; x.fillRect(p.x, p.y, p.r, p.r); }
-    const cx = W / 2, cy = H * .47, r = 76;
+    const cx = W / 2, cy = H * (H < 300 ? .6 : .47), r = Math.min(76, H * .27);
     // haze: a fine blue ring hugging the limb
     x.save(); x.shadowColor = 'rgba(110,160,255,.9)'; x.shadowBlur = 16; x.strokeStyle = 'rgba(140,185,255,.55)'; x.lineWidth = 2.2;
     x.beginPath(); x.arc(cx, cy, r + 2.5, 0, Math.PI * 2); x.stroke(); x.restore();
