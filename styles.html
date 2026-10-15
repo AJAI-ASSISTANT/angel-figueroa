@@ -139,7 +139,7 @@ const STYLES = [
   ['nebula',   'Blue nebula',          'Faint blue and silver clouds in deep space', 'matte'],
   ['concrete', 'Brushed steel',        'Dark graphite steel with light moving across it', 'shiny'],
   ['magma',    'Obsidian ice',         'Black stone with blue-white light breathing in the cracks', 'matte'],
-  ['saturn',   'Pluto',                'The icy dwarf planet, its white heart and blue haze', 'matte'],
+  ['saturn',   'Pluto on stage',       'The icy dwarf planet lit by moving heads through haze', 'shiny'],
 ];
 const grid = document.getElementById('grid'), tpl = document.getElementById('card');
 const scenes = [];
@@ -344,7 +344,7 @@ const P = {
     });
   },
   saturn(x, W, H, t, s) {
-    // Pluto: icy grey world, its bright white heart (Tombaugh Regio), the dark belt,
+    // Pluto: icy grey world, the dark belt,
     // and the thin blue haze New Horizons photographed around it
     if (!s.st) s.st = Array.from({ length: 240 }, () => ({ x: R(0, W), y: R(0, H), r: R(.2, 1.2), p: R(0, 9) }));
     x.fillStyle = '#010102'; x.fillRect(0, 0, W, H);
@@ -361,12 +361,30 @@ const P = {
       const ox = cx - r * 1.2 + spin - k * r * 4;
       // the dark equatorial belt
       x.fillStyle = 'rgba(30,36,50,.55)'; x.beginPath(); x.ellipse(ox + r * .2, cy + r * .28, r * .9, r * .24, -.12, 0, Math.PI * 2); x.fill();
-      // the white heart
-      x.save(); x.translate(ox + r * 1.25, cy + r * .1); x.scale(r / 76, r / 76);
-      x.shadowColor = 'rgba(255,255,255,.35)'; x.shadowBlur = 14; x.fillStyle = 'rgba(236,240,248,.55)';
-      x.beginPath(); x.moveTo(0, 36); x.bezierCurveTo(-40, 10, -38, -24, -14, -24); x.bezierCurveTo(-4, -24, 0, -16, 0, -10); x.bezierCurveTo(0, -16, 6, -26, 18, -24); x.bezierCurveTo(40, -20, 34, 12, 0, 36); x.fill();
-      x.restore();
     }
+    x.restore();
+    // stage lighting: a truss of moving heads at the top, white and ice-blue beams through haze,
+    // crossing to light the planet like a set piece on stage
+    const TY = H * .09, fix = [W * .1, W * .3, W * .7, W * .9];
+    x.fillStyle = '#0b0d12'; x.fillRect(W * .04, TY - 4, W * .92, 5);
+    x.strokeStyle = 'rgba(200,215,240,.25)'; x.lineWidth = .6; x.strokeRect(W * .04, TY - 4, W * .92, 5);
+    x.globalCompositeOperation = 'lighter';
+    fix.forEach((fx, i) => {
+      const sweep = Math.sin(t * .45 + i * 1.7) * .35;
+      const tx = cx + (i < 2 ? -1 : 1) * r * .25 + Math.sin(t * .5 + i) * r * .6, ty = cy + Math.cos(t * .4 + i) * r * .3;
+      const ang = Math.atan2(ty - TY, tx - fx) + sweep * .3, len = H * 1.1, spread = .09;
+      const col = i % 2 ? '150,190,255' : '255,255,255';
+      const g = x.createLinearGradient(fx, TY, fx + Math.cos(ang) * len, TY + Math.sin(ang) * len);
+      g.addColorStop(0, `rgba(${col},.26)`); g.addColorStop(.45, `rgba(${col},.08)`); g.addColorStop(1, `rgba(${col},0)`);
+      x.fillStyle = g; x.beginPath(); x.moveTo(fx, TY);
+      x.lineTo(fx + Math.cos(ang - spread) * len, TY + Math.sin(ang - spread) * len);
+      x.lineTo(fx + Math.cos(ang + spread) * len, TY + Math.sin(ang + spread) * len); x.closePath(); x.fill();
+      const lg = x.createRadialGradient(fx, TY + 3, 0, fx, TY + 3, 14); lg.addColorStop(0, `rgba(${col},1)`); lg.addColorStop(1, `rgba(${col},0)`);
+      x.fillStyle = lg; x.fillRect(fx - 14, TY - 11, 28, 28);
+      x.fillStyle = '#0b0d12'; x.fillRect(fx - 5, TY, 10, 7);
+    });
+    x.globalCompositeOperation = 'source-over';
+    x.save(); x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.clip();
     // night side and terminator
     const sh = x.createRadialGradient(cx - r * .45, cy - r * .45, r * .3, cx, cy, r * 1.15); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(.7, 'rgba(0,0,0,.25)'); sh.addColorStop(1, 'rgba(0,0,0,.8)');
     x.fillStyle = sh; x.fillRect(cx - r, cy - r, r * 2, r * 2);
