@@ -41,6 +41,10 @@
   .copy { font: 400 12px/1 Jost, sans-serif; letter-spacing: .16em; text-transform: uppercase; padding: 12px 14px; border-radius: 12px; border: 0; color: #020614; background: var(--accent); cursor: pointer; }
   .note { margin: 8px 4px 0; min-height: 0; text-align: center; font-size: 13px; color: rgba(255,255,255,.7); }
   .foot { margin-top: 14px; text-align: center; font-size: 12px; color: rgba(255,255,255,.45); letter-spacing: .06em; }
+  .shop { display: block; width: max-content; margin: 8px auto 0; padding: 6px 2px; font-size: 11px; letter-spacing: .26em; text-transform: uppercase; text-decoration: none;
+    color: rgba(255,255,255,.55); border-bottom: 1px solid rgba(127,178,255,.25); transition: color .3s, border-color .3s; }
+  .shop:hover, .shop:focus-visible { color: #fff; border-color: var(--accent); }
+  .shop span { color: var(--accent); }
   @media (prefers-reduced-motion: reduce) { .card::before { animation: none; } }
 </style>
 </head>
@@ -64,6 +68,7 @@
       <p class="note" id="note" aria-live="polite"></p>
     </div>
     <p class="foot">929-621-9399 · angellf419@gmail.com</p>
+    <a class="shop" href="https://thefinerthingsmarket.myshopify.com/" target="_blank" rel="noopener">The Finer Things Market <span aria-hidden="true">↗</span></a>
   </div>
 </main>
 <script>
