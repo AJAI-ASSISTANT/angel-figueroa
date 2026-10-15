@@ -13,7 +13,8 @@
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100svh; color: #eef0f6; font: 300 16px/1.65 Jost, system-ui, sans-serif;
-    background: #020308 url("signature/banner-stars.gif") center / cover fixed; }
+    background: #060403; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; }
   body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(70% 60% at 50% 40%, rgba(8,5,2,.30), rgba(6,4,2,.85)); z-index: -1; }
   main { max-width: 720px; margin: 0 auto; padding: 70px 16px 60px; text-align: center; }
   .k { font-size: 11px; letter-spacing: .42em; text-transform: uppercase; color: #ffd59a; margin: 0 0 14px; }
@@ -31,6 +32,7 @@
 </style>
 </head>
 <body>
+<canvas id="sky" aria-hidden="true"></canvas>
 <main>
   <p class="k">Angel Figueroa · Event production</p>
   <h1>Choose your look</h1>
@@ -41,5 +43,6 @@
   </div>
   <p class="how">Text back the number of the page style and the signature you like best.</p>
 </main>
+<script src="sky.js" defer></script>
 </body>
 </html>

@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Angel Figueroa — Email signatures</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Cormorant+Garamond:wght@500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  body { margin: 0; background: #0b0c10; color: #e9ebf2; font: 15px/1.6 "Space Grotesk", system-ui, sans-serif; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
+  body { margin: 0; background: #060403; color: #e9ebf2; font: 300 15px/1.6 Jost, system-ui, sans-serif; }
   header { text-align: center; padding: 34px 16px 4px; }
   header h1 { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: .4em; text-transform: uppercase; color: #8a8fa3; }
   header p { margin: 10px auto 0; max-width: 560px; color: #8a8fa3; font-size: 13px; }
   .wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px 70px; display: grid; gap: 34px; }
-  .opt h2 { margin: 0 0 10px; font-size: 14px; font-weight: 500; letter-spacing: .08em; }
+  .opt h2 { margin: 0 0 10px; font: 500 22px/1.2 "Cormorant Garamond", Georgia, serif; letter-spacing: .01em; }
   .opt h2 span { color: #5d6274; margin-right: 8px; }
   /* an email "page" behind each signature, so it is judged where it will live */
   .mail { background: #ffffff; border-radius: 14px; padding: 22px 22px 26px; color: #222; }
@@ -22,6 +23,7 @@
 </style>
 </head>
 <body>
+<canvas id="sky" aria-hidden="true"></canvas>
 <header>
   <h1>Angel Figueroa · Email signatures</h1>
   <p>Everything is inside the image — name, phone, email and Chime. Tapping it opens his page, where call, text, email and save contact all work.</p>
@@ -73,5 +75,6 @@ LOOKS.forEach((l, i) => {
   });
 });
 </script>
+<script src="../sky.js" defer></script>
 </body>
 </html>
