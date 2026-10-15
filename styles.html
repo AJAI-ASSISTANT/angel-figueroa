@@ -38,6 +38,9 @@
     content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 48%, transparent 60%);
     background-size: 260% 100%; animation: sheen 7s ease-in-out infinite; }
+  /* the glass sheen is a CSS animation, so stopping the canvases was only
+     half of it -- this kept sweeping across every card regardless */
+  @media (prefers-reduced-motion: reduce) { .glass::after, .card::after, [class*="shine"] { animation: none !important; } }
   @keyframes sheen { 0%, 100% { background-position: 130% 0; } 50% { background-position: -30% 0; } }
   .top { position: absolute; top: 58px; left: 0; right: 0; z-index: 3; text-align: center; }
   .av { width: 78px; height: 78px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; font: 700 24px/1 var(--display);
@@ -501,16 +504,31 @@ const P = {
     if (!s.n) { s.n = document.createElement('canvas'); s.n.width = W * 2; s.n.height = H * 2; const nx = s.n.getContext('2d'), im = nx.createImageData(W * 2, H * 2);
       for (let i = 0; i < im.data.length; i += 4) { const px = (i / 4) % (W * 2), py = (i / 4 / (W * 2)) | 0; const v = 22 + (Math.random() * 9 - 4.5) + 5 * Math.sin(py * 1.7 + Math.sin(px * .004) * 3) + 3 * Math.sin(px * .013 + py * .007); im.data[i] = v; im.data[i + 1] = v + 2; im.data[i + 2] = v + 6; im.data[i + 3] = 255; } nx.putImageData(im, 0, 0); }
     x.fillStyle = '#0f1013'; x.fillRect(0, 0, W, H);   // nothing shows at the edges when the steel drifts
-    // the stone itself drifts in slow horizontal waves, like air moving in front of it
-    for (let y = 0; y < H; y += 4) { const off = Math.sin(y * .028 + t * .55) * 2.4 + Math.sin(y * .011 - t * .3) * 1.6; x.drawImage(s.n, 0, y * 2, W * 2, 8, off, y, W, 4); }
+    // THE STEEL WARPS, it does not merely slide. The first version moved every
+    // band sideways by at most 4px on a single slow wave, which at a glance is
+    // indistinguishable from a still image -- the one style anybody would call
+    // static. Three waves now, and each band also samples a DIFFERENT ROW of
+    // the texture as it goes, so the grain itself bends instead of the whole
+    // sheet shifting. The source rectangle is clamped because reading past the
+    // end of the noise canvas silently draws nothing and leaves black seams.
+    const NH = s.n.height;
+    for (let y = 0; y < H; y += 4) {
+      const w1 = Math.sin(y * .028 + t * .9), w2 = Math.sin(y * .011 - t * .5),
+            w3 = Math.sin(y * .062 + t * 1.5);
+      const off = w1 * 7 + w2 * 4.5 + w3 * 1.8;      // sideways
+      const vo  = w2 * 7 + w3 * 3.5;                 // and which grain it reads
+      const sy  = Math.max(0, Math.min(NH - 8, y * 2 + vo));
+      const sw  = W * (1 + .018 * w1);               // a breath of width with it
+      x.drawImage(s.n, 0, sy, W * 2, 8, off - (sw - W) / 2, y, sw, 4);
+    }
     // sunlight through blinds: each slat bends and breathes gently
-    x.save(); x.translate(W * .5, H * .3); x.rotate(-.5 + Math.sin(t * .1) * .04);
+    x.save(); x.translate(W * .5, H * .3); x.rotate(-.5 + Math.sin(t * .28) * .075);
     for (let i = -9; i < 9; i++) {
-      const y0 = i * 34 + ((t * 4) % 34);
+      const y0 = i * 34 + ((t * 9) % 34);
       x.beginPath();
-      for (let k = 0; k <= 24; k++) { const xx = -W + k * (W * 2 / 24); const yy = y0 + Math.sin(xx * .012 + t * .7 + i) * 4; k ? x.lineTo(xx, yy) : x.moveTo(xx, yy); }
-      for (let k = 24; k >= 0; k--) { const xx = -W + k * (W * 2 / 24); const yy = y0 + 18 + Math.sin(xx * .012 + t * .7 + i + .4) * 4; x.lineTo(xx, yy); }
-      const g = x.createLinearGradient(0, y0, 0, y0 + 18); const a = .48 + .1 * Math.sin(t * .8 + i);
+      for (let k = 0; k <= 24; k++) { const xx = -W + k * (W * 2 / 24); const yy = y0 + Math.sin(xx * .012 + t * 1.3 + i) * 7; k ? x.lineTo(xx, yy) : x.moveTo(xx, yy); }
+      for (let k = 24; k >= 0; k--) { const xx = -W + k * (W * 2 / 24); const yy = y0 + 18 + Math.sin(xx * .012 + t * 1.3 + i + .4) * 7; x.lineTo(xx, yy); }
+      const g = x.createLinearGradient(0, y0, 0, y0 + 18); const a = .48 + .22 * Math.sin(t * 1.5 + i);
       g.addColorStop(0, 'rgba(210,225,255,0)'); g.addColorStop(.5, `rgba(214,226,248,${a * .42})`); g.addColorStop(1, 'rgba(210,225,255,0)'); x.fillStyle = g; x.fill();
     }
     x.restore();
@@ -522,19 +540,20 @@ const P = {
     if (!s.st) {
       const COLS = [[[255,255,255],.7],[[244,247,255],.3]];   // white, always
       const pick = () => { let r = Math.random(); for (const [c, w] of COLS) { if ((r -= w) <= 0) return c; } return COLS[1][0]; };
-      s.sp = {}; s.st = Array.from({ length: 900 }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, H), s: .6 + Math.pow(u, 5) * 3.6, b: .08 + .92 * Math.pow(u, 3.2), c: pick(), f1: R(.25, .9), f2: R(.9, 2.2), p: R(0, 40), tw: R(.25, .7) }; });
+      s.sp = {}; s.st = Array.from({ length: 900 }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, H), s: .6 + Math.pow(u, 5) * 3.6, b: .08 + .92 * Math.pow(u, 3.2), c: pick(), f1: R(.9, 2.3), f2: R(2.5, 5.2), p: R(0, 40), tw: R(.55, .95), sh: R(1.7, 4.2) }; });
     }
     x.fillStyle = '#020203'; x.fillRect(0, 0, W, H);
     const g = x.createRadialGradient(W * .7, H * .35, 0, W * .7, H * .35, H * .7); g.addColorStop(0, 'rgba(80,130,255,.05)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
     x.globalCompositeOperation = 'lighter';
     for (const p of s.st) {
       const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7);
-      let tw = Math.min(1, slow * (.6 + .4 * fast)); tw = tw * tw * (3 - 2 * tw);
-      const b = p.b * (1 - p.tw * tw), r = p.s * 1.7;
+      let tw = Math.min(1, slow * (.6 + .4 * fast));
+      tw = Math.pow(tw, p.sh);                  // dim most of the time, bright briefly
+      const b = p.b * (.28 + (.72 + p.tw) * tw), r = p.s * 1.7 * (1 + .3 * tw);
       const gg = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
       gg.addColorStop(0, `rgba(255,255,255,${b})`); gg.addColorStop(.12, `rgba(255,255,255,${b * .9})`); gg.addColorStop(.3, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`); gg.addColorStop(1, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},0)`);
       x.fillStyle = gg; x.fillRect(p.x - r, p.y - r, r * 2, r * 2);
-      if (p.s > 2.8 && b > .45) { const L = p.s * 5 * b; x.strokeStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`; x.lineWidth = .7; x.beginPath(); x.moveTo(p.x - L, p.y); x.lineTo(p.x + L, p.y); x.moveTo(p.x, p.y - L); x.lineTo(p.x, p.y + L); x.stroke(); }
+      if (p.s > 1.5 && tw > .45) { const L = p.s * 6 * b; x.strokeStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`; x.lineWidth = .7; x.beginPath(); x.moveTo(p.x - L, p.y); x.lineTo(p.x + L, p.y); x.moveTo(p.x, p.y - L); x.lineTo(p.x, p.y + L); x.stroke(); }
     }
     x.globalCompositeOperation = 'source-over';
   },
@@ -561,12 +580,12 @@ const P = {
       c.strokeStyle = 'rgba(214,168,96,.35)'; c.lineWidth = .5;
       for (let xp = 2; xp < W; xp += 3.5) if (Math.abs(xp - T1) > 13 && Math.abs(xp - T2) > 13) { c.beginPath(); c.moveTo(xp, cy(xp)); c.lineTo(xp, DECK); c.stroke(); }
       for (const tx of [T1, T2]) for (let k = 1; k < 8; k++) for (const sg of [-1, 1]) { c.beginPath(); c.moveTo(tx, TOP + 8); c.lineTo(tx + sg * k * 9, DECK); c.stroke(); }
-      if (!s.st) s.st = Array.from({ length: 520 }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, HZ - 10), s: .7 + Math.pow(u, 5) * 3.4, b: (.10 + .90 * Math.pow(u, 3.0)), f1: R(.25, .9), f2: R(.9, 2.2), p: R(0, 40), tw: R(.25, .7), c: Math.random() < .6 ? [255, 236, 205] : [255, 214, 160] }; });
+      if (!s.st) s.st = Array.from({ length: 520 }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, HZ - 10), s: .7 + Math.pow(u, 5) * 3.4, b: (.10 + .90 * Math.pow(u, 3.0)), f1: R(.9, 2.3), f2: R(2.5, 5.2), p: R(0, 40), tw: R(.55, .95), sh: R(1.7, 4.2), c: Math.random() < .6 ? [255, 236, 205] : [255, 214, 160] }; });
     }
     const g = x.createLinearGradient(0, 0, 0, HZ); g.addColorStop(0, '#040304'); g.addColorStop(.75, '#120a07'); g.addColorStop(1, '#3a2010'); x.fillStyle = g; x.fillRect(0, 0, W, HZ);
     x.globalCompositeOperation = 'lighter';
-    for (const p of s.st) { const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7); let tw = Math.min(1, slow * (.6 + .4 * fast)); tw = tw * tw * (3 - 2 * tw);
-      const b = p.b * (1 - p.tw * tw) * (.4 + .6 * Math.min(1, (HZ - p.y) / 160)), r = p.s * 1.6; const gg = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    for (const p of s.st) { const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7); let tw = Math.min(1, slow * (.6 + .4 * fast)); tw = Math.pow(tw, p.sh);
+      const b = p.b * (.28 + (.72 + p.tw) * tw) * (.4 + .6 * Math.min(1, (HZ - p.y) / 160)), r = p.s * 1.6 * (1 + .3 * tw); const gg = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
       gg.addColorStop(0, `rgba(255,255,255,${b})`); gg.addColorStop(.12, `rgba(255,255,255,${b * .9})`); gg.addColorStop(.3, `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${b * .45})`); gg.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gg; x.fillRect(p.x - r, p.y - r, r * 2, r * 2); }
     x.globalCompositeOperation = 'source-over';
     x.drawImage(s.sil, 0, 0, W, H);
@@ -593,7 +612,14 @@ const P = {
       const g = x.createRadialGradient(px, py, 0, px, py, c.r); g.addColorStop(0, c.h + c.a + ')'); g.addColorStop(1, c.h + '0)');
       x.fillStyle = g; x.fillRect(px - c.r, py - c.r, c.r * 2, c.r * 2);
     }
-    for (const p of s.st) { x.fillStyle = `rgba(255,255,255,${.4 + .5 * Math.sin(t * .9 + p.p)})`; x.fillRect(p.x, p.y, p.r, p.r); }
+    // nebula draws its own field as well as the shared twinkle; it used one
+    // .9 rad/s sine that never fell below .4 alpha, so it shimmered rather
+    // than twinkled. Same treatment, so the two fields agree.
+    for (const p of s.st) {
+      const kk = Math.pow(.5 + .5 * Math.sin(t * (1.4 + p.r) + p.p), 2.6);
+      x.fillStyle = `rgba(255,255,255,${(.10 + .85 * kk).toFixed(3)})`;
+      x.fillRect(p.x, p.y, p.r * (.8 + .5 * kk), p.r * (.8 + .5 * kk));
+    }
     x.globalCompositeOperation = 'source-over';
   },
 };
@@ -617,17 +643,19 @@ function sprite(col) {
 function twinkle(sc, t) {
   const cfg = TWINKLE[sc.id]; if (!cfg) return;
   const x = sc.x, W = sc.W, H = sc.H, st = sc.s;
-  if (!st.tw) st.tw = Array.from({ length: cfg.n }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, H * (cfg.top || 1)), r: 1.2 + Math.pow(u, 4) * 5, c: cfg.c[(Math.random() * cfg.c.length) | 0], f1: R(.3, .9), f2: R(1, 2.4), p: R(0, 40), b: .35 + .65 * Math.pow(u, 1.5), v: R(.4, 1) }; });
+  if (!st.tw) st.tw = Array.from({ length: cfg.n }, () => { const u = Math.random(); return { x: R(0, W), y: R(0, H * (cfg.top || 1)), r: 1.2 + Math.pow(u, 4) * 5, c: cfg.c[(Math.random() * cfg.c.length) | 0], f1: R(.9, 2.4), f2: R(2.6, 5.4), p: R(0, 40), b: .35 + .65 * Math.pow(u, 1.5), v: R(.4, 1), sh: R(1.7, 4.4) }; });
   x.globalCompositeOperation = 'lighter';
   for (const p of st.tw) {
     if (cfg.rise) { p.y -= cfg.rise * p.v; p.x += Math.sin(t * .8 + p.p) * .25; if (p.y < -8) { p.y = H + 8; p.x = R(0, W); } }
     if (cfg.dust) { p.y += Math.sin(t * .3 + p.p) * .12; p.x += .08 * p.v; if (p.x > W + 6) p.x = -6; }
     const slow = .5 + .5 * Math.sin(t * p.f1 + p.p), fast = .5 + .5 * Math.sin(t * p.f2 + p.p * 1.7);
-    let k = Math.min(1, slow * (.55 + .45 * fast)); k = k * k * (3 - 2 * k);
-    const a = p.b * (cfg.dust ? .35 : cfg.ember ? .5 + .5 * k : k), r = p.r * (cfg.ember ? .8 : 1) * (.8 + .4 * k);
+    let k = Math.min(1, slow * (.55 + .45 * fast));
+    k = Math.pow(k, p.sh);                       // dim most of the time, bright briefly
+    const a = p.b * (cfg.dust ? .35 : cfg.ember ? .5 + .5 * k : (.28 + 1.05 * k)),
+          r = p.r * (cfg.ember ? .8 : 1) * (.72 + .72 * k);
     x.globalAlpha = a; x.drawImage(sprite(p.c), p.x - r * 2, p.y - r * 2, r * 4, r * 4);
-    if (!cfg.dust && !cfg.ember && p.r > 3.4 && k > .82) {      // a fine four-point glint at the peak
-      const L = p.r * (3.5 + 5 * (k - .82) / .18) * (cfg.g ? 1 + cfg.g : 1); x.globalAlpha = a * .55; x.strokeStyle = p.c; x.lineWidth = .7;
+    if (!cfg.dust && !cfg.ember && p.r > 2.1 && k > .5) {       // a fine four-point glint at the peak
+      const L = p.r * (3.5 + 5 * (k - .5) / .5) * (cfg.g ? 1 + cfg.g : 1); x.globalAlpha = a * .62; x.strokeStyle = p.c; x.lineWidth = .7;
       x.beginPath(); x.moveTo(p.x - L, p.y); x.lineTo(p.x + L, p.y); x.moveTo(p.x, p.y - L); x.lineTo(p.x, p.y + L); x.stroke();
     }
   }
@@ -636,13 +664,24 @@ function twinkle(sc, t) {
 const io = new IntersectionObserver(es => es.forEach(e => { const sc = scenes.find(s => s.c === e.target); if (sc) sc.visible = e.isIntersecting; }), { rootMargin: '100px' });
 scenes.forEach(s => io.observe(s.c));
 let last = 0;
+// NINE CANVASES RAN REGARDLESS OF prefers-reduced-motion, which is nine
+// animation loops on a phone belonging to somebody who asked for none. Draw
+// one frame so the page is not blank, then stop -- there is no loop to start.
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function loop(now) {
   requestAnimationFrame(loop);
   if (now - last < 1000 / 45) return; last = now;
   const t = now / 1000;
   for (const s of scenes) if (s.visible) { P[s.id](s.x, s.W, s.H, t, s.s); twinkle(s, t); }
 }
-requestAnimationFrame(loop);
+function once() {
+  // the scenes are built as they scroll into view, so a single pass at load
+  // would leave the ones below the fold black. Paint whatever is visible
+  // whenever that changes, and never more than that.
+  for (const s of scenes) if (s.visible) { P[s.id](s.x, s.W, s.H, 4, s.s); twinkle(s, 4); }
+}
+if (REDUCE) { once(); addEventListener('scroll', once, { passive: true }); addEventListener('resize', once); }
+else requestAnimationFrame(loop);
 window.__P = P;   // reused to render the email signature banners
 window.__TW = twinkle;
 </script>
