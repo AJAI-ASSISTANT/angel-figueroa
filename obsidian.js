@@ -265,10 +265,13 @@
       k = Math.pow(k, p.sh);          // dim most of the time, bright briefly
       const r = p.r * (.72 + .72 * k); x.globalAlpha = p.b * (.28 + 1.05 * k);
       x.drawImage(sp, p.x - r * 2, p.y - r * 2, r * 4, r * 4);
-      // the cross-flare is what the eye actually reads as a twinkle, and it
-      // used to fire only on the biggest 15% of stars and only above k=.82,
-      // so on a normal screen almost nothing ever flared
-      if (p.r > 2.2 && k > .5) { const L = p.r * (3.5 + 5 * (k - .5) / .5); x.globalAlpha = p.b * k * .6; x.strokeStyle = '#fff'; x.lineWidth = Math.max(.5, 1 / dpr); x.beginPath(); x.moveTo(p.x - L, p.y); x.lineTo(p.x + L, p.y); x.moveTo(p.x, p.y - L); x.lineTo(p.x, p.y + L); x.stroke(); }
+      // NO CROSS-FLARE. A horizontal stroke and a vertical one through the
+      // star is a lens artefact, and at these sizes it reads as a letter t
+      // sitting in the sky -- which is what Josh saw on the live page and
+      // asked to be rid of. It used to be here because it is "what the eye
+      // reads as a twinkle"; the twinkle is still there without it, in the
+      // radius and the alpha, both of which already swing on k. Drawn
+      // spikes were the loudest part of it, not the only part.
     }
     x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
     const sh = x.createLinearGradient(0, 0, 0, H); sh.addColorStop(0, 'rgba(0,0,0,.35)'); sh.addColorStop(.45, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.35)'); x.fillStyle = sh; x.fillRect(0, 0, W, H);
